@@ -92,6 +92,7 @@ impl Manager {
 
         if let Some(index) = self.tasks.iter().position(|task| task.id() == id) {
             self.update_task_at_index(index, update.clone(), false);
+            self.refresh();
             return Ok(());
         }
         Err(format!("Warning: Attempted update but task {} but it was not found.", id))
@@ -123,7 +124,7 @@ impl Manager {
                 }
             }
         }
-
+        self.refresh();
         updated
     }
 
@@ -586,7 +587,14 @@ impl Manager {
     }
 
     pub(crate) fn update_settings(&mut self, s: Settings) { 
-        self.settings = s; 
+        self.settings = s;
+        self.refresh();
+    }
+
+    fn refresh(&mut self){
+        self.check_and_reset_recurring_tasks();
+        self.check_due_date_promotions();
+        self.apply_auto_clear();
     }
 }
 

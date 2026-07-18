@@ -12,7 +12,7 @@ export const api = {
   // Runs startup hooks (recurring resets, due date promotions, auto-clear) then returns fresh data.
   // Call this on a 5-minute interval — not getAllData — so hooks actually run.
   refresh: (): Promise<AppData> =>
-    invoke("refresh"),
+    invoke("refresh_and_get_data"),
 
   // --- Tasks ---
   addTask: (categoryId: string, name: string, description: string): Promise<void> =>
