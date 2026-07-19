@@ -57,7 +57,7 @@ export default function App() {
       <Sidebar page={page} onNavigate={setPage} collapsed={!sidebarOpen} onToggle={() => setSidebarOpen(v => !v)} />
       <main className="app-content">
         {page === "main"      && <MainPage      data={data} mutate={mutate} mode={mode} />}
-        {page === "completed" && <CompletedPage data={data} mode={mode} mutate={mutate} />}
+        {page === "completed" && <CompletedPage data={data} mutate={mutate} />}
         {page === "archive"   && <ArchivePage   data={data} mutate={mutate} />}
         {page === "settings"  && <SettingsPage  data={data} mutate={mutate} mode={mode} onSetMode={setViewMode} />}
       </main>

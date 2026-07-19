@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import type { Task, Category, TaskUpdate, Priority, RecurrenceUnit, MutateFn } from "../types";
+import type { Task, TaskUpdate, Priority, RecurrenceUnit, MutateFn } from "../types";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { DatePicker } from "./DatePicker";
 import { api } from "../api";
@@ -42,14 +42,12 @@ function recSummary(interval: number, unit: RecurrenceUnit): string {
 interface Props {
   task: Task;
   isArchived: boolean;
-  categories: Category[];
   onClose: () => void;
   mutate: MutateFn;
-  variant?: "inline" | "fixed-bottom";
 }
 
 export function TaskDetailPanel({
-  task, isArchived, onClose, mutate, variant = "inline",
+  task, isArchived, onClose, mutate,
 }: Props) {
   const [name,          setName]         = useState(task.name);
   const [desc,          setDesc]         = useState(task.description);
@@ -156,8 +154,6 @@ export function TaskDetailPanel({
 
   const removeDue = () => { setDueDate(""); setDueTime("09:00"); setDueExpanded(false); };
 
-  const isFixed = variant === "fixed-bottom";
-
   return (
     <>
       {confirmState && (
@@ -167,8 +163,7 @@ export function TaskDetailPanel({
           onCancel={() => setConfirmState(null)}
         />
       )}
-      {isFixed && <div className="panel-overlay" onClick={onClose} />}
-      <div className={`panel-bottom${isFixed ? " panel-bottom--fixed" : ""}`}>
+      <div className="panel-bottom">
 
         {/* ── Header ────────────────────────────────────── */}
         <div className="panel-bottom-head">

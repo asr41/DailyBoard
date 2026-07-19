@@ -234,7 +234,6 @@ export function MainPage({ data, mutate, mode }: Props) {
                 <CategoryRow
                   key={cat.id}
                   category={cat}
-                  categories={data.categories}
                   groups={data.groups}
                   notStarted={data.not_started.filter(t => t.category_id === cat.id)}
                   inProgress={data.in_progress.filter(t => t.category_id === cat.id)}
@@ -311,10 +310,8 @@ export function MainPage({ data, mutate, mode }: Props) {
           <TaskDetailPanel
             task={detailTask}
             isArchived={false}
-            categories={data.categories}
             onClose={() => setDetailTask(null)}
             mutate={mutate}
-            variant="inline"
           />
         </div>
       )}

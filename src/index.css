@@ -63,12 +63,6 @@ body {
 .page { padding: 18px 22px; flex: 1; overflow-y: auto; }
 .page-title { font-size: 28px; font-weight: 600; margin-bottom: 16px; }
 
-/* ── Selection bar ──────────────────────────────────── */
-.selection-bar { background: var(--accent); color: #fff; padding: 7px 22px; display: flex; align-items: center; gap: 10px; font-size: 15px; flex-shrink: 0; }
-.sel-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 15px; }
-.sel-btn:hover { background: rgba(255,255,255,0.3); }
-.sel-dismiss { margin-left: auto; }
-
 /* ── Board grid ─────────────────────────────────────── */
 .board-sticky { position: sticky; top: 0; z-index: 10; background: var(--bg); padding: 10px 0 4px; }
 .board-body   { padding: 0 16px 20px; }
@@ -108,20 +102,6 @@ body {
   white-space: nowrap;
 }
 
-/* Rename input — vertical-lr = top→bottom, no rotation, cursor moves naturally */
-.cat-label-input {
-  writing-mode: vertical-lr;
-  font-size: 18px;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 2px;
-  color: inherit;
-  padding: 4px 3px;
-  outline: none;
-  width: 80%;
-  max-height: 240px;
-  font-family: inherit;
-}
 
 /* "+" new-category slot — same footprint as a label */
 .cat-add-slot {
@@ -140,19 +120,6 @@ body {
 .cat-add-slot:hover { border-color: var(--border); color: var(--text-muted); }
 .cat-add-active { border-radius: 6px; min-height: var(--cat-row-h); display: flex; align-items: center; padding: 0 20px; border: 1.5px dashed var(--accent); background: transparent; }
 
-/* Horizontal add-category row — expands across full board width */
-.cat-add-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 13px 15px;
-  margin-top: 4px;
-  background: var(--surface-hi);
-  border-radius: 6px;
-  border: 1.5px dashed var(--accent);
-  min-height: 64px;
-}
-.cat-add-text { flex: 1; font-size: 16px; }
 
 .cat-menu { position: absolute; top: 4px; left: calc(100% + 4px); z-index: 200; background: var(--surface-hi); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.5); min-width: 150px; padding: 4px; }
 .cat-menu-item { display: block; width: 100%; padding: 6px 10px; background: none; border: none; color: var(--text); cursor: pointer; text-align: left; font-size: 15px; border-radius: 4px; }
@@ -165,10 +132,6 @@ body {
 .group-name-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 5px 8px; font-size: 13px; outline: none; font-family: inherit; box-sizing: border-box; }
 .group-name-input:focus { border-color: var(--accent); }
 
-/* Submenu for groups */
-.cat-submenu-wrap { position: relative; }
-.cat-submenu-wrap:hover .cat-submenu { display: block; }
-.cat-submenu { display: none; position: absolute; top: -4px; left: calc(100% + 2px); background: var(--surface-hi); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.5); min-width: 140px; padding: 4px; z-index: 201; }
 
 /* ── Task column ────────────────────────────────────── */
 .task-col { border-radius: 4px; padding: 10px; position: relative; display: grid; grid-auto-rows: auto; align-items: stretch; gap: 8px; min-height: var(--cat-row-h); align-content: start; transition: background 0.1s; }
@@ -183,12 +146,6 @@ body {
   55%  { transform: scale(1.22); }
   100% { transform: scale(1); }
 }
-@keyframes streak-pop {
-  0%   { transform: scale(1); }
-  30%  { transform: scale(1.6); }
-  65%  { transform: scale(0.85); }
-  100% { transform: scale(1); }
-}
 
 /* ── Task card ──────────────────────────────────────── */
 .task-card { border-radius: 6px; padding: 14px 16px; position: relative; cursor: pointer; user-select: none; border: 1.5px solid transparent; background: var(--surface-hi); transition: filter 0.1s; min-height: 48px; min-width: 0; }
@@ -199,12 +156,6 @@ body {
 .task-checkbox--checked { animation: check-fill 0.22s ease-out both; }
 .task-card-name { flex: 1; min-width: 0; font-size: 18px; line-height: 1.5; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .task-card-due { flex-shrink: 0; font-size: 13px; color: var(--text-muted); }
-.task-streak { display: inline-flex; align-items: center; gap: 4px; font-size: 18px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
-.task-streak--pop { animation: streak-pop 0.42s cubic-bezier(0.36,0.07,0.19,0.97) both; }
-
-/* High priority: card gets category color, task name gets dark pill for contrast */
-.task-card--high .task-card-due { color: var(--text-muted); }
-.task-name-pill { display: inline-block; background: rgba(0,0,0,0.42); color: #f0f0f0; border-radius: 3px; padding: 2px 7px; }
 
 .task-menu { position: absolute; top: calc(100% + 2px); right: 0; z-index: 300; background: var(--surface-hi); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.5); min-width: 140px; padding: 4px; }
 .task-menu-item { display: block; width: 100%; padding: 6px 10px; background: none; border: none; color: var(--text); cursor: pointer; text-align: left; font-size: 15px; border-radius: 4px; }
@@ -240,13 +191,11 @@ body {
   color: var(--text-muted);
   background: var(--surface-hi);
 }
-.add-task-form { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; background: var(--surface-hi); border-radius: 6px; border: 1.5px dashed var(--border); }
 .add-task-card { padding: 11px 13px; background: transparent; border: 1.5px dashed var(--accent); border-radius: 6px; display: flex; align-items: center; min-height: 48px; }
 .add-ghost-input { background: transparent; border: none; outline: none; color: var(--text); font-size: 18px; font-weight: 500; width: 100%; padding: 0; font-family: inherit; line-height: 1.5; height: 1.5em; -webkit-appearance: none; appearance: none; }
 .add-ghost-input::placeholder { color: var(--text-dim); }
 
-/* ── Task detail panel (bottom sheet) ───────────────── */
-.panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 400; }
+/* ── Task detail panel ──────────────────────────────── */
 
 /* Inline variant — fills parent container (MainPage lifts state) */
 .panel-bottom {
@@ -256,14 +205,6 @@ body {
   height: 100%;
   overflow: hidden;
   animation: slideInRight 0.18s ease;
-}
-/* Fixed variant — overlays from right (ArchivePage) */
-.panel-bottom--fixed {
-  position: fixed;
-  top: 0; right: 0; bottom: 0;
-  width: 35%;
-  z-index: 401;
-  box-shadow: -6px 0 32px rgba(0,0,0,0.5);
 }
 @keyframes slideInRight {
   from { transform: translateX(100%); opacity: 0; }
@@ -303,14 +244,12 @@ body {
 .insp-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
 .insp-section-right { display: flex; align-items: center; gap: 10px; }
 .insp-section-summary { font-size: 14px; color: var(--text-muted); }
-.insp-section-chevron { font-size: 13px; color: var(--text-dim); }
 .insp-section-body { padding: 0 16px 14px; display: flex; flex-direction: column; gap: 10px; }
 .insp-field-label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
 
 /* Value rows (date / time inputs inside the inspector) */
 .insp-val-row { display: flex; align-items: center; gap: 8px; background: var(--surface-hi); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; font-size: 15px; }
 .insp-val-row:hover { border-color: var(--text-dim); }
-.insp-val-icon { color: var(--text-dim); font-size: 13px; flex-shrink: 0; line-height: 1; }
 .insp-val-clear { background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 0; font-size: 19px; line-height: 1; flex-shrink: 0; }
 .insp-val-clear:hover { color: var(--danger); }
 .insp-time-input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-size: 15px; font-family: inherit; color-scheme: dark; min-width: 0; }
@@ -348,8 +287,6 @@ body {
 .content-col { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 14px 20px; }
 .content-desc-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-dim); margin-bottom: 10px; flex-shrink: 0; }
 
-/* ── Legacy desc col (kept for reference, superseded by content-col) */
-.panel-desc-col { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 10px 14px; }
 .panel-desc-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
 
 /* Description: always-editable — toolbar appears on focus via :focus-within */
@@ -382,29 +319,16 @@ body {
 .panel-editor ul, .panel-editor ol { padding-left: 20px; }
 .panel-editor p, .panel-editor div { margin: 0; }
 
-/* Shared form controls (also used in settings) */
-.panel-select { background: var(--surface-hi); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 0 8px; font-size: 15px; width: 100%; outline: none; height: 32px; }
-.panel-select:focus { border-color: var(--accent); }
-.panel-time { background: var(--surface-hi); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 0 8px; font-size: 15px; outline: none; color-scheme: dark; height: 32px; width: 120px; }
-.panel-time:focus { border-color: var(--accent); }
-.panel-num { width: 60px; background: var(--surface-hi); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 0 8px; font-size: 13px; outline: none; height: 32px; text-align: center; }
-.toggle-row { display: flex; gap: 4px; flex-wrap: wrap; }
 .toggle-btn { padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 15px; }
 .toggle-btn:hover { border-color: var(--text-dim); color: var(--text); }
 .toggle-btn--on { background: var(--accent); border-color: var(--accent); color: #fff; }
-.inline-row { display: flex; gap: 6px; align-items: center; }
-
-/* Page with open fixed panel: push content up so it's not hidden */
-.page-panel-open { padding-right: 35%; }
 
 /* ── Completed / Archive shared ─────────────────────── */
 .group-head { font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 8px 8px 10px; border-left: 2px solid; margin: 20px 0 4px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; border-radius: 0 4px 4px 0; }
 .group-head:first-child { margin-top: 0; }
 .group-head:hover { background: rgba(255,255,255,0.03); }
 .group-section { margin-bottom: 0; }
-.group-cats-indent { padding-left: 18px; }
 .collapse-caret { display: flex; align-items: center; color: var(--text-dim); flex-shrink: 0; }
-.cat-count { font-size: 13px; color: var(--text-dim); flex-shrink: 0; }
 .comp-badge { display: inline-flex; align-items: center; justify-content: center; background: var(--surface-hi); border: 1px solid var(--border); border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--text-dim); padding: 2px 9px; min-width: 22px; flex-shrink: 0; }
 
 /* ── Completed page ─────────────────────────────────── */
@@ -423,28 +347,6 @@ body {
 .completed-cat-head { padding: 5px 8px 5px 10px; border-left: 2px solid; font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; border-radius: 0 4px 4px 0; }
 .completed-cat-head:hover { background: rgba(255,255,255,0.02); }
 .completed-cat--grouped .completed-cat-head { color: var(--text-dim) !important; border-left: none !important; padding-left: 12px; }
-.completed-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--surface); border-radius: 4px; margin-bottom: 2px; font-size: 15px; }
-.date-lbl { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
-.streak { display: inline-flex; align-items: center; gap: 3px; font-size: 13px; font-weight: 700; color: var(--accent); }
-
-/* ── Completed history calendar ─────────────────────── */
-.history-btn { background: none; border: 1px solid var(--border); color: var(--text); font-size: 13px; border-radius: 4px; padding: 2px 8px; cursor: pointer; }
-.history-btn:hover { border-color: var(--text-muted); background: var(--surface-hi); }
-.history-backdrop { position: fixed; inset: 0; z-index: 499; }
-.history-popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 500; background: var(--surface-hi); border: 1px solid var(--border); border-radius: 10px; padding: 16px; box-shadow: 0 12px 40px rgba(0,0,0,0.7); width: 258px; }
-.history-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.history-count { font-size: 16px; font-weight: 700; color: var(--accent); }
-.history-task-name { font-size: 14px; color: var(--text-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
-.history-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 0 2px; line-height: 1; flex-shrink: 0; }
-.history-close:hover { color: var(--text); }
-.history-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.history-nav-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; border-radius: 4px; padding: 2px 9px; font-size: 14px; line-height: 1.4; }
-.history-nav-btn:hover { color: var(--text); border-color: var(--text-muted); }
-.history-month { font-size: 14px; font-weight: 600; color: var(--text); }
-.history-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-.history-dow { font-size: 12px; color: var(--text-dim); text-align: center; padding: 2px 0 5px; font-weight: 600; letter-spacing: 0.03em; }
-.history-day { font-size: 12px; text-align: center; border-radius: 50%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
-.history-day--done { background: var(--accent); color: #fff; font-weight: 700; }
 
 /* ── Completed page — bubble grid ───────────────────── */
 .comp-bubble-grid { display: flex; flex-wrap: wrap; gap: 10px; padding: 6px 0 16px; }
@@ -452,7 +354,6 @@ body {
 .comp-bubble:hover { background: var(--surface-hi); }
 .comp-bubble--active { border-color: var(--accent); background: var(--surface-hi); }
 .comp-bubble--selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.comp-bubble-top { display: flex; align-items: center; gap: 5px; }
 .comp-bubble-name { font-size: 18px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .comp-bubble-date { font-size: 14px; color: var(--text-dim); margin-top: 2px; }
 
@@ -499,8 +400,6 @@ body {
 .drag-ghost { box-shadow: 0 8px 24px rgba(0,0,0,0.6); cursor: grabbing; pointer-events: none; }
 
 /* ── Shared ─────────────────────────────────────────── */
-.input { background: var(--surface-hi); border: 1px solid var(--border); border-radius: 4px; padding: 5px 8px; color: var(--text); font-size: 15px; outline: none; }
-.input:focus { border-color: var(--accent); }
 .btn   { padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 15px; }
 .btn-p { background: var(--accent); border: none; color: #fff; }
 .btn-p:hover { filter: brightness(1.12); }
@@ -509,7 +408,6 @@ body {
 .btn-d { background: transparent; border: 1px solid #622; color: var(--danger); }
 .btn-d:hover { background: #62222210; }
 .empty { color: var(--text-muted); font-size: 15px; padding: 6px 0; }
-.spacer { flex: 1; }
 
 /* ── Static display row (date/time in panels) ────────── */
 .insp-display-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 15px; color: var(--text); }
@@ -519,10 +417,8 @@ body {
 .ctx-menu-item { display: flex; align-items: center; gap: 8px; width: 100%; background: none; border: none; color: var(--text); font-size: 15px; padding: 8px 12px; border-radius: 6px; cursor: pointer; text-align: left; }
 .ctx-menu-item:hover { background: var(--surface); }
 .ctx-menu-item--restore { color: var(--accent); }
-.ctx-menu-item--delete  { color: var(--red, #e05); }
+.ctx-menu-item--delete  { color: var(--danger); }
 
-/* ── Archive bubble — selected state ────────────────── */
-.comp-bubble--selected { border-color: var(--accent); background: rgba(0,200,150,0.06); }
 
 /* ── Restore action button ───────────────────────────── */
 .insp-action-btn--restore { color: var(--accent); }

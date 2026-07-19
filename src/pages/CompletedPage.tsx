@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import type { AppData, Task, Category, Group, MutateFn, AppMode } from "../types";
+import type { AppData, Task, Category, Group, MutateFn } from "../types";
 import { CompletedDetailPanel } from "../components/CompletedDetailPanel";
 import { Chevron } from "../components/icons";
 import { lastCompletedISO, formatShortDate } from "../utils/taskUtils";
 
 interface Props {
   data: AppData;
-  mode: AppMode;
   mutate: MutateFn;
 }
 
@@ -21,7 +20,7 @@ function BubbleCheck() {
   );
 }
 
-export function CompletedPage({ data, mode: _mode, mutate }: Props) {
+export function CompletedPage({ data, mutate }: Props) {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [collapsedCats,   setCollapsedCats]   = useState<Set<string>>(new Set());
   const [detailTask,      setDetailTask]      = useState<Task | null>(null);

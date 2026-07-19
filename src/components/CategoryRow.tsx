@@ -12,7 +12,6 @@ const NOW = () => new Date().toISOString();
 
 interface Props {
   category: Category;
-  categories: Category[];
   groups: Group[];
   notStarted: Task[];
   inProgress: Task[];
