@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { AppData, MutateFn, HideCompletedPolicy, Settings, AppMode } from "../types";
+import { api } from "../api";
+import { open, save as saveDialog } from "@tauri-apps/plugin-dialog";
 
 interface Props {
   data: AppData;
   mutate: MutateFn;
   mode: AppMode;
   onSetMode: (m: AppMode) => void;
+  onRefreshData: () => Promise<void>;
 }
 
 type HideMode = "after" | "immediately";
@@ -27,7 +30,7 @@ function buildHidePolicy(mode: HideMode, num: number, unit: HideUnit): HideCompl
     : { AfterDays:  { num_days:  num } };
 }
 
-export function SettingsPage({ data, mutate, mode, onSetMode }: Props) {
+export function SettingsPage({ data, mutate, mode, onSetMode, onRefreshData }: Props) {
   const init = parseHidePolicy(data.settings.hide_completed_delay);
 
   const [hideMode, setHideMode] = useState<HideMode>(init.mode);
@@ -37,6 +40,54 @@ export function SettingsPage({ data, mutate, mode, onSetMode }: Props) {
     data.settings.auto_clear_completed_days == null ? "never" : "after"
   );
   const [clearNum, setClearNum] = useState<number>(data.settings.auto_clear_completed_days ?? 90);
+
+  const [storagePath,      setStoragePath]      = useState<string | null>(null);
+  const [storageMsg,       setStorageMsg]       = useState<string | null>(null);
+  const [exportBusy,       setExportBusy]       = useState(false);
+  const [exportMsg,        setExportMsg]        = useState<string | null>(null);
+  const [importBusy,       setImportBusy]       = useState(false);
+  const [importMsg,        setImportMsg]        = useState<string | null>(null);
+
+  useEffect(() => {
+    api.getStoragePath().then(setStoragePath).catch(() => {});
+  }, []);
+
+  const handleChangeLocation = async () => {
+    setStorageMsg(null);
+    const folder = await open({ directory: true, multiple: false }).catch(() => null);
+    if (!folder || typeof folder !== "string") return;
+    await api.changeStorageLocation(folder).catch(() => {});
+    setStoragePath(folder);
+    setStorageMsg("Location changed.");
+  };
+
+  const handleExport = async () => {
+    setExportBusy(true);
+    setExportMsg(null);
+    const path = await saveDialog({
+      defaultPath: "dailyboard-export.json",
+      filters: [{ name: "JSON", extensions: ["json"] }],
+    }).catch(() => null);
+    if (path) {
+      await api.exportBoard(path).catch(() => {});
+      setExportMsg("Board exported.");
+    }
+    setExportBusy(false);
+  };
+
+  const handleImport = async () => {
+    const path = await open({
+      multiple: false,
+      filters: [{ name: "JSON", extensions: ["json"] }],
+    }).catch(() => null);
+    if (!path || typeof path !== "string") return;
+    setImportBusy(true);
+    setImportMsg(null);
+    await api.importBoard(path).catch(() => {});
+    await onRefreshData();
+    setImportBusy(false);
+    setImportMsg("Board imported.");
+  };
 
   const save = (patch: {
     hideMode?: HideMode; hideNum?: number; hideUnit?: HideUnit;
@@ -173,6 +224,40 @@ export function SettingsPage({ data, mutate, mode, onSetMode }: Props) {
           </label>
         </div>
       </div>
+
+      <div className="settings-divider" />
+
+      {/* ── Data ────────────────────────────────────── */}
+      <div className="settings-section">
+        <div className="settings-section-head">Data</div>
+
+        <div className="settings-field-label">Storage Location</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <span style={{ fontSize: 13, color: "var(--text-muted)", fontFamily: "monospace", wordBreak: "break-all" }}>
+            {storagePath ?? "…"}
+          </span>
+          <button className="btn btn-g" style={{ flexShrink: 0 }} onClick={handleChangeLocation}>
+            Change…
+          </button>
+        </div>
+        {storageMsg && <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 8 }}>{storageMsg}</div>}
+
+        <div style={{ marginTop: 14 }} />
+
+        <div className="settings-field-label">Export / Import</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn btn-g" onClick={handleExport} disabled={exportBusy}>
+            {exportBusy ? "Exporting…" : "Export Board…"}
+          </button>
+          <button className="btn btn-g" onClick={handleImport} disabled={importBusy}>
+            {importBusy ? "Importing…" : "Import Board…"}
+          </button>
+        </div>
+        {exportMsg && <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>{exportMsg}</div>}
+        {importMsg && <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>{importMsg}</div>}
+      </div>
+
+
     </div>
   );
 }

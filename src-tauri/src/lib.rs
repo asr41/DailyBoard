@@ -19,7 +19,9 @@ use crate::manager::Manager;
 
 pub struct AppState {
   pub manager: Mutex<Manager>,
-  pub save_path: PathBuf,
+  //we are allowing path to be changed
+  pub save_path: Mutex<PathBuf>,
+  pub config_path: PathBuf,
 }
 
 pub fn run() {
@@ -27,23 +29,27 @@ pub fn run() {
   //Builder is assembly line, manage is telling Tauri to take AppState and keep it
   //in global 'backpack' for front end commands to access as necessary.
   tauri::Builder::default()
-  
-
+  .plugin(tauri_plugin_dialog::init())
   .setup(|app| {
-    let mut save_path = app.path().app_data_dir()?;
+    let default_path = app.path().app_data_dir()?.join("DailyBoard.json");
+    let config_path = app.path().app_data_dir()?.join("config.json");
 
-    //create directory if necessary
-    std::fs::create_dir_all(&save_path)?;
+    let save_path = if config_path.exists() {
+      let s = std::fs::read_to_string(&config_path)?;
+      let v: serde_json::Value = serde_json::from_str(&s)?;
+        v["data_path"].as_str().map(PathBuf::from).unwrap_or(default_path)
+    } else {
+        default_path
+    };
 
-    save_path.push("DailyBoard.json");
-
-    let mut manager = Manager::load_from_file(save_path.to_str().unwrap()).unwrap_or_else(|_| Manager::new());
+    let mut manager = Manager::load_from_file(&save_path).unwrap_or_else(|_| Manager::new());
     manager.check_and_reset_recurring_tasks();
     manager.check_due_date_promotions();
     manager.apply_auto_clear();
     app.manage(AppState {
       manager: Mutex::new(manager),
-      save_path:save_path,
+      save_path:Mutex::new(save_path),
+      config_path:config_path,
     });
 
     Ok(())
@@ -70,6 +76,11 @@ pub fn run() {
     commands::rename_group,
     commands::delete_group,
     commands::update_settings,
+    commands::update_settings,
+    commands::get_storage_path,
+    commands::export_board,
+    commands::import_board,
+    commands::change_storage_location,
   ])
 
   //run() blocks the current thread until the application is finished.

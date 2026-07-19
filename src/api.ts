@@ -68,4 +68,17 @@ export const api = {
   // --- Settings ---
   updateSettings: (settings: Settings): Promise<void> =>
     invoke("update_settings", { settings }),
+
+  // --- Data / Storage ---
+  getStoragePath: (): Promise<string> =>
+    invoke("get_storage_path"),
+
+  exportBoard: (exportPath: string): Promise<void> =>
+    invoke("export_board", { exportPath }),
+
+  importBoard: (importPath: string): Promise<void> =>
+    invoke("import_board", { importPath }),
+
+  changeStorageLocation: (chosenFolder: string): Promise<void> =>
+    invoke("change_storage_location", { chosenFolder }),
 };

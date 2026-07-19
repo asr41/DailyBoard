@@ -59,7 +59,7 @@ export default function App() {
         {page === "main"      && <MainPage      data={data} mutate={mutate} mode={mode} />}
         {page === "completed" && <CompletedPage data={data} mutate={mutate} />}
         {page === "archive"   && <ArchivePage   data={data} mutate={mutate} />}
-        {page === "settings"  && <SettingsPage  data={data} mutate={mutate} mode={mode} onSetMode={setViewMode} />}
+        {page === "settings"  && <SettingsPage  data={data} mutate={mutate} mode={mode} onSetMode={setViewMode} onRefreshData={loadData} />}
       </main>
     </div>
   );

@@ -9,6 +9,7 @@ use std::fs::File;
 use std::io::{Write, Read};
 use std::error::Error;
 use uuid::Uuid;
+use std::path::{Path};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub(crate) struct RecurrenceInput{
@@ -60,7 +61,7 @@ impl Manager {
         }
     }
 
-    pub(crate) fn save_to_file(&self, path: &str) -> Result<(), Box<dyn Error>> {
+    pub(crate) fn save_to_file(&self, path: &Path) -> Result<(), Box<dyn Error>> {
         //typically use to_strign for sending to UI, to_string_pretty is formated and human readable.
         // the quesiton mark is an if opertaion failed immediatly return error from this func
         let json = serde_json::to_string_pretty(self)?;
@@ -70,7 +71,7 @@ impl Manager {
         Ok(())
     }
 
-    pub(crate) fn load_from_file(path: &str) -> Result<Self, Box<dyn Error>> {
+    pub(crate) fn load_from_file(path: &Path) -> Result<Self, Box<dyn Error>> {
         let mut file = File::open(path)?;
         let mut contents = String::default();
         file.read_to_string(&mut contents)?;
