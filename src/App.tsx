@@ -12,7 +12,7 @@ export type Page = "main" | "completed" | "archive" | "settings";
 export default function App() {
   const [page,          setPage]          = useState<Page>("main");
   const [data,          setData]          = useState<AppData | null>(null);
-  const [sidebarOpen,   setSidebarOpen]   = useState(true);
+  const [sidebarOpen,   setSidebarOpen]   = useState(false);
   const [mode, setMode] = useState<AppMode>(() => {
     const s = localStorage.getItem("viewMode");
     return (s === "simple" || s === "default") ? s : "default";

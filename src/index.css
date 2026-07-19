@@ -46,7 +46,6 @@ body {
   flex-direction: column;
   gap: 0;
   padding: 16px 6px 8px;
-  border-right: 1px solid var(--border-dim);
   flex-shrink: 0;
   overflow: hidden;
   transition: width 0.15s ease;
@@ -172,7 +171,7 @@ body {
 .cat-submenu { display: none; position: absolute; top: -4px; left: calc(100% + 2px); background: var(--surface-hi); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.5); min-width: 140px; padding: 4px; z-index: 201; }
 
 /* ── Task column ────────────────────────────────────── */
-.task-col { border-radius: 4px; padding: 10px; position: relative; display: grid; grid-auto-rows: minmax(48px, auto); align-items: stretch; gap: 8px; min-height: var(--cat-row-h); align-content: start; transition: background 0.1s; }
+.task-col { border-radius: 4px; padding: 10px; position: relative; display: grid; grid-auto-rows: auto; align-items: stretch; gap: 8px; min-height: var(--cat-row-h); align-content: start; transition: background 0.1s; }
 .task-col--ns   { background: var(--surface); }
 .task-col--ip   { background: rgba(88,101,242,0.06); }
 .task-col--done { background: rgba(255,255,255,0.025); }
@@ -192,9 +191,9 @@ body {
 }
 
 /* ── Task card ──────────────────────────────────────── */
-.task-card { border-radius: 6px; padding: 14px 16px; position: relative; cursor: pointer; user-select: none; border: 1.5px solid transparent; background: var(--surface-hi); transition: filter 0.1s; }
+.task-card { border-radius: 6px; padding: 14px 16px; position: relative; cursor: pointer; user-select: none; border: 1.5px solid transparent; background: var(--surface-hi); transition: filter 0.1s; min-height: 48px; }
 .task-card:hover { filter: brightness(1.12); }
-.task-card--selected { outline: 2px solid var(--accent); outline-offset: 2px; }
+.task-card--selected { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 10px 2px rgba(88, 101, 242, 0.3); }
 .task-card-top { display: flex; align-items: center; gap: 9px; }
 .task-checkbox { flex-shrink: 0; width: 20px; height: 20px; border-radius: 3px; border: 1.5px solid; display: flex; align-items: center; justify-content: center; transition: background 0.12s; }
 .task-checkbox--checked { animation: check-fill 0.22s ease-out both; }
@@ -242,7 +241,7 @@ body {
   background: var(--surface-hi);
 }
 .add-task-form { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; background: var(--surface-hi); border-radius: 6px; border: 1.5px dashed var(--border); }
-.add-task-card { padding: 11px 13px; background: transparent; border: 1.5px dashed var(--accent); border-radius: 6px; display: flex; align-items: center; }
+.add-task-card { padding: 11px 13px; background: transparent; border: 1.5px dashed var(--accent); border-radius: 6px; display: flex; align-items: center; min-height: 48px; }
 .add-ghost-input { background: transparent; border: none; outline: none; color: var(--text); font-size: 18px; font-weight: 500; width: 100%; padding: 0; font-family: inherit; line-height: 1.5; height: 1.5em; -webkit-appearance: none; appearance: none; }
 .add-ghost-input::placeholder { color: var(--text-dim); }
 
@@ -254,7 +253,6 @@ body {
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  border-left: 2px solid var(--accent);
   height: 100%;
   overflow: hidden;
   animation: slideInRight 0.18s ease;
@@ -273,10 +271,10 @@ body {
 }
 
 /* Header — two-column aligned with body columns */
-.panel-bottom-head { display: flex; align-items: stretch; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.panel-bottom-head { display: flex; align-items: stretch; flex-shrink: 0; }
 .panel-head-left  { width: 310px; flex-shrink: 0; display: flex; align-items: center; padding: 8px 12px; border-right: 1px solid var(--border); transition: width 0.2s ease; overflow: hidden; }
 .panel-head-left--collapsed { width: 48px; padding: 8px 0; justify-content: center; }
-.panel-head-right { flex: 1; display: flex; align-items: center; gap: 10px; padding: 8px 16px; }
+.panel-head-right { flex: 1; display: flex; align-items: center; gap: 10px; padding: 8px 16px; border-bottom: 1px solid var(--border); }
 .insp-back        { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; line-height: 1; display: flex; align-items: center; border-radius: 4px; }
 .insp-back:hover  { color: var(--text); background: var(--surface-hi); }
 .insp-close       { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 21px; padding: 0 4px; line-height: 1; flex-shrink: 0; }

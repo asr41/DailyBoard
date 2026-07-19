@@ -140,7 +140,7 @@ export function MainPage({ data, mutate, mode }: Props) {
   const clearSelection = () => { setSelectedIds(new Set()); setSelectedCatIds(new Set()); };
 
   const handleOpenDetail = useCallback((task: Task) => {
-    setSelectedIds(new Set());
+    setSelectedIds(new Set([task.id]));
     setSelectedCatIds(new Set());
     setDetailTask(task);
   }, []);
