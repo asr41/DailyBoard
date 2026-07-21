@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Nix build output symlink
+result
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

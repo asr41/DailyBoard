@@ -28,6 +28,13 @@ To uninstall:
 nix profile remove dailyboard
 ```
 
+## Install (Windows)
+
+Download the latest installer from the [Releases page](https://github.com/asr41/DailyBoard/releases):
+
+- `DailyBoard_<version>_x64-setup.exe` — NSIS installer (recommended)
+- `DailyBoard_<version>_x64_en-US.msi` — MSI installer (for enterprise/GPO deployment)
+
 ## Tech Stack
 
 - **Backend:** Rust + Tauri
