@@ -96,11 +96,12 @@
       ];
 
       # Make the parent of src-tauri/ writable so preBuild can create ../dist inside it.
-      postUnpack = "chmod u+w source";
+      postUnpack = "chmod -R u+w source";
 
       # Copy the pre-built frontend where tauri-build's build.rs looks for it.
       preBuild = ''
         cp -r ${frontendDrv} ../dist
+        chmod -R u+w ../dist
       '';
 
       postInstall = ''
