@@ -405,7 +405,7 @@ export function CategoryRow({
         {/* Completed */}
         <DroppableCol id={`col:${category.id}:completed`} variant="done">
           {visibleCompleted.map(t => taskCard(t, "completed"))}
-        </DroppableCol>
+        </DroppableCol> 
       </div>
     </>
   );

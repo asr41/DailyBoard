@@ -77,6 +77,8 @@
       # No sha256 to manage — reads Cargo.lock directly.
       cargoLock.lockFile = ./src-tauri/Cargo.lock;
 
+      cargoBuildFlags = [ "--features" "tauri/custom-protocol" ];
+
       nativeBuildInputs = with pkgs; [
         pkg-config
         wrapGAppsHook3   # wraps binary: GTK env, XDG portals, system theming
