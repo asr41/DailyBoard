@@ -31,8 +31,11 @@ pub fn run() {
   tauri::Builder::default()
   .plugin(tauri_plugin_dialog::init())
   .setup(|app| {
-    let default_path = app.path().app_data_dir()?.join("DailyBoard.json");
-    let config_path = app.path().app_data_dir()?.join("config.json");
+    let app_data_dir = app.path().app_data_dir()?;
+    std::fs::create_dir_all(&app_data_dir)?;
+
+    let default_path = app_data_dir.join("DailyBoard.json");
+    let config_path = app_data_dir.join("config.json");
 
     let save_path = if config_path.exists() {
       let s = std::fs::read_to_string(&config_path)?;

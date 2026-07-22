@@ -36,7 +36,8 @@ function dueSummary(date: string, time: string): string {
 }
 
 function recSummary(interval: number, unit: RecurrenceUnit): string {
-  return `Every ${interval} ${unit.toLowerCase()}${interval !== 1 ? "s" : ""}`;
+  const singular = unit.toLowerCase().replace(/s$/, "");
+  return `Every ${interval} ${singular}${interval !== 1 ? "s" : ""}`;
 }
 
 interface Props {
