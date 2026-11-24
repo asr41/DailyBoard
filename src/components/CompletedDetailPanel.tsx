@@ -3,7 +3,7 @@ import type { Task, TaskUpdate, MutateFn } from "../types";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { api } from "../api";
 import { CalendarIcon, ClockIcon, TrashIcon, ArchiveIcon, PanelToggle, Chevron, FlameIcon } from "./icons";
-import { toEditorHtml, lastCompletedISO } from "../utils/taskUtils";
+import { toEditorHtml, lastCompletedISO, displayStreak } from "../utils/taskUtils";
 import { RichTextEditor, type EditorHandle } from "./RichTextEditor";
 
 const MONTHS = [
@@ -187,7 +187,7 @@ export function CompletedDetailPanel({ task, onClose, mutate }: Props) {
                   <div className="comp-stat-label">Current Streak</div>
                   <div className="comp-stat-value">
                     <FlameIcon width={28} height={34} fill="var(--purple)" style={{ flexShrink: 0 }} />
-                    <span className="comp-stat-num">{task.recurrence.streak}</span>
+                    <span className="comp-stat-num">{displayStreak(task).streak}</span>
                     <span className="comp-stat-unit">days</span>
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export function CompletedDetailPanel({ task, onClose, mutate }: Props) {
                   <div className="comp-stat-label">Longest Streak</div>
                   <div className="comp-stat-value">
                     <TrophyIcon />
-                    <span className="comp-stat-num">{task.recurrence.longest_streak}</span>
+                    <span className="comp-stat-num">{displayStreak(task).longest}</span>
                     <span className="comp-stat-unit">days</span>
                   </div>
                 </div>

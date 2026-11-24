@@ -84,6 +84,11 @@ export function CategoryRow({
     setMenuOpen(false);
   };
 
+  const handleCompleteCat = () => {
+    mutate(() => api.completeCategories(catBatchIds));
+    setMenuOpen(false);
+  };
+
   const handleDeleteCat = () => {
     const label = catBatchIds.length > 1 ? `${catBatchIds.length} categories` : `"${category.name}"`;
     setMenuOpen(false);
@@ -266,7 +271,10 @@ export function CategoryRow({
                   Group
                 </button>
                 <div className="cat-menu-sep" />
+                <button className="cat-menu-item" onClick={handleCompleteCat}>Complete</button>
+                <div className="cat-menu-sep" />
                 <button className="cat-menu-item" onClick={handleArchiveCat}>Archive</button>
+                <div className="cat-menu-sep" />
                 <button className="cat-menu-item cat-menu-item--danger" onClick={handleDeleteCat}>Delete</button>
               </div>
             </>

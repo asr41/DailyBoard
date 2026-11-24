@@ -47,6 +47,7 @@ export function SettingsPage({ data, mutate, mode, onSetMode, onRefreshData }: P
   const [exportMsg,        setExportMsg]        = useState<string | null>(null);
   const [importBusy,       setImportBusy]       = useState(false);
   const [importMsg,        setImportMsg]        = useState<string | null>(null);
+  const [importPending,    setImportPending]    = useState<string | null>(null);
 
   useEffect(() => {
     api.getStoragePath().then(setStoragePath).catch(() => {});
@@ -81,12 +82,23 @@ export function SettingsPage({ data, mutate, mode, onSetMode, onRefreshData }: P
       filters: [{ name: "JSON", extensions: ["json"] }],
     }).catch(() => null);
     if (!path || typeof path !== "string") return;
-    setImportBusy(true);
+    setImportPending(path);
     setImportMsg(null);
-    await api.importBoard(path).catch(() => {});
+  };
+
+  const runImport = async (merge: boolean) => {
+    const path = importPending;
+    if (!path) return;
+    setImportPending(null);
+    setImportBusy(true);
+    if (merge) {
+      await api.importBoardMerge(path).catch(() => {});
+    } else {
+      await api.importBoard(path).catch(() => {});
+    }
     await onRefreshData();
     setImportBusy(false);
-    setImportMsg("Board imported.");
+    setImportMsg(merge ? "Board merged." : "Board replaced.");
   };
 
   const save = (patch: {
@@ -249,10 +261,21 @@ export function SettingsPage({ data, mutate, mode, onSetMode, onRefreshData }: P
           <button className="btn btn-g" onClick={handleExport} disabled={exportBusy}>
             {exportBusy ? "Exporting…" : "Export Board…"}
           </button>
-          <button className="btn btn-g" onClick={handleImport} disabled={importBusy}>
+          <button className="btn btn-g" onClick={handleImport} disabled={importBusy || !!importPending}>
             {importBusy ? "Importing…" : "Import Board…"}
           </button>
         </div>
+        {importPending && (
+          <div className="import-modal">
+            <div className="import-modal-file">{importPending.split(/[\\/]/).pop()}</div>
+            <div className="import-modal-q">How should this be imported?</div>
+            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+              <button className="btn btn-p" onClick={() => runImport(false)}>Replace</button>
+              <button className="btn btn-g" onClick={() => runImport(true)}>Add</button>
+              <button className="btn btn-g" onClick={() => setImportPending(null)}>Cancel</button>
+            </div>
+          </div>
+        )}
         {exportMsg && <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>{exportMsg}</div>}
         {importMsg && <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>{importMsg}</div>}
       </div>

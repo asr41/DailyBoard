@@ -52,6 +52,12 @@ export const api = {
   unarchiveCategories: (ids: string[]): Promise<void> =>
     invoke("unarchive_categories", { ids }),
 
+  completeCategories: (ids: string[]): Promise<void> =>
+    invoke("complete_categories", { ids }),
+
+  uncompleteCategories: (ids: string[]): Promise<void> =>
+    invoke("uncomplete_categories", { ids }),
+
   moveCategoriesToGroup: (ids: string[], groupId: string | null): Promise<void> =>
     invoke("move_categories_to_group", { ids, groupId }),
 
@@ -78,6 +84,9 @@ export const api = {
 
   importBoard: (importPath: string): Promise<void> =>
     invoke("import_board", { importPath }),
+
+  importBoardMerge: (importPath: string): Promise<void> =>
+    invoke("import_board_merge", { importPath }),
 
   changeStorageLocation: (chosenFolder: string): Promise<void> =>
     invoke("change_storage_location", { chosenFolder }),

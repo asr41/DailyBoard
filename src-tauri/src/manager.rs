@@ -16,6 +16,7 @@ pub(crate) struct RecurrenceInput{
     pub(crate) interval: u32,
     pub(crate) unit: RecurrenceUnit,
     pub(crate) start_date: Option<DateTime<Utc>>,
+    pub(crate) day_mask: Option<u8>,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
@@ -196,7 +197,7 @@ impl Manager {
         }
 
         if let Some(recurrence) = update.recurrence {
-            if let Err(_) = task.set_recurrence(recurrence.interval, recurrence.unit, recurrence.start_date) { 
+            if let Err(_) = task.set_recurrence(recurrence.interval, recurrence.unit, recurrence.day_mask, recurrence.start_date) { 
                 eprintln!("Unable to update recurrence"); 
             }
         }
@@ -310,7 +311,7 @@ impl Manager {
 
     pub(crate) fn get_completed(&self) -> Vec<Task> {
         self.tasks.iter()
-            .filter(|task|matches!(task.state(), State::Completed {..}))
+            .filter(|task| matches!(task.state(), State::Completed {..}) || task.has_completion_history())
             .cloned()
             .collect()
     }
@@ -348,7 +349,13 @@ impl Manager {
 
         let cutoff = Utc::now() - duration;
 
-        self.tasks.retain(|task| match task.state() {
+        //tasks in a Completed category are the record of that category, so auto-clear must not delete them
+        let completed_cats: HashSet<Uuid> = self.categories.iter()
+            .filter(|c| matches!(c.status(),CategoryStatus::Completed))
+            .map(|c| c.id())
+            .collect();
+
+        self.tasks.retain(|task| completed_cats.contains(&task.category_id()) || match task.state() {
             State::Completed{completed_date} => *completed_date >= cutoff,
             _ => true,
         });
@@ -485,6 +492,7 @@ impl Manager {
 
     pub(crate) fn archive_categories(&mut self, ids: &[Uuid]){
         if ids.len() <= 16{
+            //we pass by ref &task.catergory_id() becaue contains expects match teh x: &T param
             self.tasks_to_archived(|task| ids.contains(&task.category_id()));
             self.categories.iter_mut().filter(|c| ids.contains(&c.id())).for_each(|c| c.set_status(CategoryStatus::Archived));
 
@@ -507,6 +515,89 @@ impl Manager {
             self.categories.iter_mut().filter(|c| set.contains(&c.id())).for_each(|c| c.set_status(CategoryStatus::Active));
         }
         
+    }
+
+    pub(crate) fn complete_categories(&mut self, ids: &[Uuid]){
+        let now = Utc::now();
+        let set: Option<HashSet<Uuid>> = (ids.len() > 16).then(|| ids.iter().copied().collect());
+        let in_ids = |id: &Uuid| match &set {
+            Some(set) => set.contains(id),
+            None => ids.contains(id),
+        };
+
+        for c in self.categories.iter_mut().filter(|c| in_ids(&c.id())) {
+            c.set_status(CategoryStatus::Completed);
+            c.set_completed_date(Some(now));
+        }
+
+        for task in self.tasks.iter_mut()
+            .filter(|t| in_ids(&t.category_id()) && !matches!(t.state(), State::Completed { .. }))
+        {
+            task.mark_completed_at(now);
+        }
+        self.refresh();
+    }
+
+    // restore category back to Active
+    //  only tasks whose completed_date equals the category's completed_date get set to not started
+    pub(crate) fn uncomplete_categories(&mut self, ids: &[Uuid]){
+        let set: Option<HashSet<Uuid>> = (ids.len() > 16).then(|| ids.iter().copied().collect());
+        let in_ids = |id: &Uuid| match &set {
+            Some(set) => set.contains(id),
+            None => ids.contains(id),
+        };
+
+        let mut restore: HashMap<Uuid, DateTime<Utc>> = HashMap::new();
+        for c in self.categories.iter_mut().filter(|c| in_ids(&c.id())) {
+            c.set_status(CategoryStatus::Active);
+            if let Some(date) = c.completed_date() {
+                restore.insert(c.id(), date);
+            }
+            c.set_completed_date(None);
+        }
+
+        for task in self.tasks.iter_mut() {
+            if let Some(&date) = restore.get(&task.category_id()) {
+                task.revert_completion_at(date);
+            }
+        }
+        self.refresh();
+    }
+
+    // Additive Import
+    // Anything whose id already exists locally is kept as-is (local wins), anything new is
+    // added. That makes it safe to merge the same file twice (no duplicates)
+    // Settings and the color counter stay local
+    pub(crate) fn merge_from(&mut self, other: Manager){
+        // destructuring a struct pulls its fields out as owned values and .. ignores the rest (settings, color index)
+        let Manager { tasks, archived, mut categories, groups, .. } = other;
+
+        let group_ids: HashSet<Uuid> = self.groups.iter().map(|g| g.id()).collect();
+        //filter then extend moves only the new groups across.
+        self.groups.extend(groups.into_iter().filter(|g| !group_ids.contains(&g.id())));
+
+        // imported categories go after the local ones, keeping their relative order from the other board
+        // Spaced by 1000 like add_category does
+        let mut next_order = self.categories.iter().map(|c| c.order()).max().map_or(1000, |o| o + 1000);
+        categories.sort_by_key(|c| c.order());
+        let cat_ids: HashSet<Uuid> = self.categories.iter().map(|c| c.id()).collect();
+        for mut cat in categories {
+            if cat_ids.contains(&cat.id()) {
+                continue;
+            }
+            cat.set_order(next_order);
+            next_order += 1000;
+            self.categories.push(cat);
+        }
+
+        // check for tasks in archived adn categories
+        let task_ids: HashSet<Uuid> = self.tasks.iter().chain(self.archived.iter()).map(|t| t.id()).collect();
+        let all_cat_ids: HashSet<Uuid> = self.categories.iter().map(|c| c.id()).collect();
+        let is_new = |t: &Task| !task_ids.contains(&t.id()) && all_cat_ids.contains(&t.category_id());
+
+        self.tasks.extend(tasks.into_iter().filter(|t| is_new(t)));
+        self.archived.extend(archived.into_iter().filter(|t| is_new(t)));
+        self.refresh();
     }
 
     pub(crate) fn move_categories_to_group(&mut self, ids: &[Uuid], group_id: Option<Uuid>)-> Result<(), String>{

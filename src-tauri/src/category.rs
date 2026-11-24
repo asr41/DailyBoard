@@ -1,5 +1,6 @@
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
+use chrono::{DateTime, Utc};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]//Make a note about Debug
 pub(crate) struct Category {
@@ -10,6 +11,10 @@ pub(crate) struct Category {
     order: u32,
     group_id: Option<Uuid>, //optional only catagories in groups
     status: CategoryStatus,
+    //useful in adition if u revert a completed category all the tasks in it that were marked done
+    //when the category was completed can be filtered adn reverted preservign teh completed tasks 
+    //done prior to category completed date.
+    completed_date: Option<DateTime<Utc>>,
 }
 
 impl Category {
@@ -22,6 +27,7 @@ impl Category {
             order: order,
             group_id: None,
             status: CategoryStatus::Active,
+            completed_date: None,
         }
     }
 
@@ -75,6 +81,14 @@ impl Category {
     }
     pub(crate) fn status(&self)-> CategoryStatus{
         self.status
+    }
+
+    pub(crate) fn completed_date(&self)-> Option<DateTime<Utc>>{
+        self.completed_date
+    }
+
+    pub(crate) fn set_completed_date(&mut self, date: Option<DateTime<Utc>>){
+        self.completed_date = date;
     }
 
 }

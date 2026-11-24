@@ -74,15 +74,17 @@ pub fn run() {
     commands::delete_categories,
     commands::archive_categories,
     commands::unarchive_categories,
+    commands::complete_categories,
+    commands::uncomplete_categories,
     commands::move_categories_to_group,
     commands::create_group,
     commands::rename_group,
     commands::delete_group,
     commands::update_settings,
-    commands::update_settings,
     commands::get_storage_path,
     commands::export_board,
     commands::import_board,
+    commands::import_board_merge,
     commands::change_storage_location,
   ])
 

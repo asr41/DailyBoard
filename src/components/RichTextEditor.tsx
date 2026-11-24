@@ -1,4 +1,4 @@
-import React, { useRef, useImperativeHandle } from "react";
+import React, { useRef, useImperativeHandle, useState } from "react";
 
 export interface EditorHandle {
   getHTML(): string;
@@ -11,7 +11,10 @@ export const RichTextEditor = React.forwardRef<EditorHandle, {
   onBlurChange: (html: string) => void;
   placeholder?: string;
 }>(({ onBlurChange, placeholder = "Add a description…" }, ref) => {
-  const divRef = useRef<HTMLDivElement>(null);
+  const divRef      = useRef<HTMLDivElement>(null);
+  const colorRef    = useRef<HTMLInputElement>(null);
+  const savedRange  = useRef<Range | null>(null);
+  const [fgColor,   setFgColor] = useState("#9b6dff");
 
   useImperativeHandle(ref, () => ({
     getHTML: () => {
@@ -28,6 +31,23 @@ export const RichTextEditor = React.forwardRef<EditorHandle, {
     divRef.current?.focus();
   };
 
+  const openColorPicker = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) savedRange.current = sel.getRangeAt(0).cloneRange();
+    colorRef.current?.click();
+  };
+
+  const applyColor = (color: string) => {
+    setFgColor(color);
+    divRef.current?.focus();
+    if (savedRange.current) {
+      const sel = window.getSelection();
+      if (sel) { sel.removeAllRanges(); sel.addRange(savedRange.current); }
+    }
+    document.execCommand("foreColor", false, color);
+  };
+
   return (
     <div className="panel-desc-editor-wrap">
       <div className="editor-toolbar">
@@ -40,6 +60,17 @@ export const RichTextEditor = React.forwardRef<EditorHandle, {
         <button className="editor-btn" onMouseDown={e => { e.preventDefault(); execCmd("insertOrderedList"); }}>1.</button>
         <div className="editor-sep" />
         <button className="editor-btn" onMouseDown={e => { e.preventDefault(); execCmd("removeFormat"); }}>Aa</button>
+        <div className="editor-sep" />
+        <button className="editor-btn editor-btn--color" onMouseDown={openColorPicker} title="Text color">
+          <span style={{ borderBottom: `2.5px solid ${fgColor}`, lineHeight: 1 }}>A</span>
+        </button>
+        <input
+          ref={colorRef}
+          type="color"
+          value={fgColor}
+          style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0 }}
+          onChange={e => applyColor(e.target.value)}
+        />
       </div>
       <div
         ref={divRef}

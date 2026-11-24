@@ -35,6 +35,23 @@ function dueSummary(date: string, time: string): string {
   );
 }
 
+// JS getDay() 0=Sun…6=Sat → chrono 0=Mon…6=Sun
+function jsToChronoDay(jsDay: number): number { return (jsDay + 6) % 7; }
+function startWeekday(dateStr: string): number {
+  return dateStr ? jsToChronoDay(new Date(dateStr + "T12:00:00").getDay()) : jsToChronoDay(new Date().getDay());
+}
+
+// Backend stores selected weekdays as a bitmask (bit 0 = Mon … bit 6 = Sun)
+function daysToMask(days: number[]): number { return days.reduce((m, d) => m | (1 << d), 0); }
+function maskToDays(mask: number): number[] { return [0, 1, 2, 3, 4, 5, 6].filter(d => mask & (1 << d)); }
+function initialDays(task: Task): number[] {
+  const rec = task.recurrence;
+  if (!rec || rec.unit !== "Weeks") return [];
+  if (rec.weekly) return maskToDays(rec.weekly.day_mask);
+  // Legacy weekly task (no day selection): it repeats on its start weekday
+  return [startWeekday(toLocalDate(rec.cycle_start))];
+}
+
 function recSummary(interval: number, unit: RecurrenceUnit): string {
   const singular = unit.toLowerCase().replace(/s$/, "");
   return `Every ${interval} ${singular}${interval !== 1 ? "s" : ""}`;
@@ -63,6 +80,7 @@ export function TaskDetailPanel({
   const [recUnit,       setRecUnit]      = useState<RecurrenceUnit>(task.recurrence?.unit ?? "Days");
   const [recStart,      setRecStart]     = useState(toLocalDate(task.recurrence?.cycle_start));
   const [recStartTime,  setRecStartTime] = useState(toLocalTime(task.recurrence?.cycle_start));
+  const [recDaysOfWeek, setRecDaysOfWeek] = useState<number[]>(initialDays(task));
   const [recExpanded,   setRecExpanded]  = useState(false);
   const [clearRec,      setClearRec]     = useState(false);
 
@@ -85,6 +103,7 @@ export function TaskDetailPanel({
     setRecUnit(task.recurrence?.unit ?? "Days");
     setRecStart(toLocalDate(task.recurrence?.cycle_start));
     setRecStartTime(toLocalTime(task.recurrence?.cycle_start));
+    setRecDaysOfWeek(initialDays(task));
     setRecExpanded(false);
     setClearRec(false);
     editorRef.current?.setHTML(task.description ? toEditorHtml(task.description) : "");
@@ -104,6 +123,7 @@ export function TaskDetailPanel({
       recUnit       !== (task.recurrence?.unit     ?? "Days") ||
       recStart      !== initStart ||
       recStartTime  !== initStartTm ||
+      (recUnit === "Weeks" && daysToMask(recDaysOfWeek) !== daysToMask(initialDays(task))) ||
       task.recurrence === null
     );
 
@@ -116,7 +136,8 @@ export function TaskDetailPanel({
       remove_due_date:   (!dueSet && task.due_date !== null) ? true : null,
       recurrence:        !clearRec && recEnabled && recChanged
                            ? { interval: recInterval, unit: recUnit,
-                               start_date: recStart ? toUTC(recStart, recStartTime) : null }
+                               start_date: recStart ? toUTC(recStart, recStartTime) : null,
+                               day_mask: recUnit === "Weeks" ? daysToMask(recDaysOfWeek) : null }
                            : null,
       remove_recurrence: (clearRec || (!recEnabled && task.recurrence !== null)) ? true : null,
       state:             null,
@@ -303,19 +324,66 @@ export function TaskDetailPanel({
                           <select
                             className="insp-unit-select"
                             value={recUnit}
-                            onChange={e => setRecUnit(e.target.value as RecurrenceUnit)}
+                            onChange={e => {
+                              const u = e.target.value as RecurrenceUnit;
+                              setRecUnit(u);
+                              if (u === "Weeks") {
+                                const wd = startWeekday(recStart);
+                                setRecDaysOfWeek(prev => prev.includes(wd) ? prev : [...prev, wd]);
+                              }
+                            }}
                           >
                             {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
                           </select>
                         </div>
                       </div>
+                      {recUnit === "Weeks" && (
+                        <div>
+                          <div className="insp-field-label">Repeat on</div>
+                          <div className="rec-dow-grid">
+                            {["M","T","W","T","F","S","S"].map((label, day) => {
+                              const isStart = startWeekday(recStart) === day;
+                              const checked = recDaysOfWeek.includes(day);
+                              return (
+                                <button
+                                  key={day}
+                                  className={`rec-dow-btn${checked ? " rec-dow-btn--on" : ""}`}
+                                  title={isStart ? "Required by start date" : undefined}
+                                  onClick={() => {
+                                    if (isStart) return; // can't uncheck the start day
+                                    setRecDaysOfWeek(prev =>
+                                      prev.includes(day)
+                                        ? prev.filter(d => d !== day)
+                                        : [...prev, day].sort((a, b) => a - b)
+                                    );
+                                  }}
+                                >
+                                  {label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                       <div>
                         <div className="insp-field-label">Starts</div>
                         <div className="insp-val-row">
                           <CalendarIcon />
                           <DatePicker
                             value={recStart}
-                            onChange={setRecStart}
+                            onChange={v => {
+                              const prev = recStart;
+                              setRecStart(v);
+                              if (recUnit === "Weeks" && v) {
+                                const newWd  = startWeekday(v);
+                                const oldWd  = prev ? startWeekday(prev) : -1;
+                                setRecDaysOfWeek(days => {
+                                  let next = days.filter(d => d !== oldWd || days.length <= 1);
+                                  if (!next.includes(newWd)) next = [...next, newWd].sort((a, b) => a - b);
+                                  return next;
+                                });
+                              }
+                            }}
                             placeholder="No start date"
                           />
                           {recStart && (

@@ -3,6 +3,7 @@ import type { AppData, Task, Category, Group, MutateFn } from "../types";
 import { CompletedDetailPanel } from "../components/CompletedDetailPanel";
 import { Chevron } from "../components/icons";
 import { lastCompletedISO, formatShortDate } from "../utils/taskUtils";
+import { api } from "../api";
 
 interface Props {
   data: AppData;
@@ -106,6 +107,34 @@ export function CompletedPage({ data, mutate }: Props) {
       return aMin - bMin;
     });
 
+  const handleRestoreCat = (id: string) => {
+    mutate(() => api.uncompleteCategories([id]));
+  };
+
+  const completedCats = data.categories
+    .filter(c => c.status === "Completed")
+    .sort((a, b) => a.order - b.order);
+
+  const completedCatGroupMap = new Map<string, Category[]>();
+  const completedCatUngrouped: Category[] = [];
+  for (const cat of completedCats) {
+    if (cat.group_id) {
+      const list = completedCatGroupMap.get(cat.group_id) ?? [];
+      list.push(cat);
+      completedCatGroupMap.set(cat.group_id, list);
+    } else {
+      completedCatUngrouped.push(cat);
+    }
+  }
+
+  const sortedCompletedCatGroups: Group[] = data.groups
+    .filter(g => completedCatGroupMap.has(g.id))
+    .sort((a, b) => {
+      const aMin = Math.min(...(completedCatGroupMap.get(a.id) ?? []).map(c => c.order));
+      const bMin = Math.min(...(completedCatGroupMap.get(b.id) ?? []).map(c => c.order));
+      return aMin - bMin;
+    });
+
   const renderCatBlock = (cat: Category) => {
     const tasks = byCategory.get(cat.id) ?? [];
     if (tasks.length === 0) return null;
@@ -136,14 +165,52 @@ export function CompletedPage({ data, mutate }: Props) {
                 onClick={e => handleBubbleClick(e, task)}
               >
                 <BubbleCheck />
-                <div>
-                  <div className="comp-bubble-name">{task.name}</div>
+                <div style={{ minWidth: 0, overflow: "hidden" }}>
+                  <div className="comp-bubble-name" title={task.name}>{task.name}</div>
                   <div className="comp-bubble-date">{formatShortDate(lastCompletedISO(task))}</div>
                 </div>
               </div>
             ))}
           </div>
         )}
+      </div>
+    );
+  };
+
+  const renderCompletedCat = (cat: Category, inGroup: boolean) => {
+    const taskCount = data.completed.filter(t => t.category_id === cat.id).length;
+    return (
+      <div key={cat.id} className="archive-row">
+        <span
+          className="cat-chip"
+          style={!inGroup ? { background: cat.display_color, color: "#fff" } : { background: "var(--surface-hi)", color: "var(--text-muted)" }}
+        >
+          {cat.name}
+        </span>
+        <span style={{ flex: 1, fontSize: 12, color: "var(--text-muted)" }}>
+          {taskCount} task{taskCount !== 1 ? "s" : ""}
+        </span>
+        <button className="btn btn-g" style={{ fontSize: 12 }} onClick={() => handleRestoreCat(cat.id)}>Restore</button>
+      </div>
+    );
+  };
+
+  const renderCompletedCatGroup = (group: Group) => {
+    const key = `ccg:${group.id}`;
+    const isCollapsed = collapsedGroups.has(key);
+    const cats = completedCatGroupMap.get(group.id) ?? [];
+    return (
+      <div key={group.id} className="group-section">
+        <div
+          className="group-head"
+          style={{ color: group.color, borderColor: group.color }}
+          onClick={() => toggleGroup(key)}
+        >
+          <span>{group.name}</span>
+          <span style={{ flex: 1 }} />
+          <span className="collapse-caret"><Chevron open={!isCollapsed} size={20} /></span>
+        </div>
+        {!isCollapsed && cats.map(cat => renderCompletedCat(cat, true))}
       </div>
     );
   };
@@ -187,6 +254,19 @@ export function CompletedPage({ data, mutate }: Props) {
         <div style={{ height: "100%", overflowY: "auto", padding: "18px 22px" }}>
           <div className="page-title">Completed</div>
           {listContent}
+
+          {/* ── Completed categories ────────────────────── */}
+          <div style={{ marginTop: 60 }}>
+            <div className="section-head">Categories</div>
+            {completedCats.length === 0 ? (
+              <p className="empty">No completed categories.</p>
+            ) : (
+              <>
+                {sortedCompletedCatGroups.map(renderCompletedCatGroup)}
+                {completedCatUngrouped.map(cat => renderCompletedCat(cat, false))}
+              </>
+            )}
+          </div>
         </div>
         {detailTask && !panelFullPage && (
           <div

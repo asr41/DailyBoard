@@ -25,6 +25,13 @@ export interface Recurrence {
   cycle_start: string;
   streak: number;
   longest_streak: number;
+  weekly?: WeeklySchedule | null;
+}
+
+/** Weekday schedule for weekly recurrence. day_mask: bit 0 = Mon … bit 6 = Sun. */
+export interface WeeklySchedule {
+  day_mask: number;
+  naive_cycle_start: string;
 }
 
 export interface Task {
@@ -59,6 +66,7 @@ export interface RecurrenceInput {
   interval: number;
   unit: RecurrenceUnit;
   start_date?: string | null;
+  day_mask?: number | null;
 }
 
 export interface Category {

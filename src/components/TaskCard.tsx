@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { Task, AppMode } from "../types";
+import { FlameIcon } from "./icons";
+import { displayStreak } from "../utils/taskUtils";
 
 export type ColType = "not_started" | "in_progress" | "completed";
 
@@ -27,6 +29,7 @@ export function TaskCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const isHigh = task.priority === "High";
   const isCompleted = col === "completed";
+  const { streak } = displayStreak(task);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -112,6 +115,12 @@ export function TaskCard({
           <span className="task-card-due">
             Due {new Date(task.due_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
           </span>
+        )}
+        {streak > 0 && mode !== "simple" && (
+          <div className="task-card-streak">
+            <FlameIcon width={11} height={14} fill="var(--accent)" />
+            <span>{streak}</span>
+          </div>
         )}
       </div>
 

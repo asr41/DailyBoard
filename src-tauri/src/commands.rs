@@ -258,6 +258,36 @@ pub fn unarchive_categories(state: TauriState<AppState>, ids: Vec<Uuid>) {
 }
 
 #[tauri::command]
+pub fn complete_categories(state: TauriState<AppState>, ids: Vec<Uuid>) {
+    let mut manager = state.manager.lock().unwrap();
+    manager.complete_categories(&ids);
+    let path = {
+        let save_path = state.save_path.lock().unwrap();
+        save_path.clone()
+    };
+
+    match manager.save_to_file(&path){
+        Ok(()) =>{},
+        Err(e) => eprintln!("Failed to save: {e}"),
+    }
+}
+
+#[tauri::command]
+pub fn uncomplete_categories(state: TauriState<AppState>, ids: Vec<Uuid>) {
+    let mut manager = state.manager.lock().unwrap();
+    manager.uncomplete_categories(&ids);
+    let path = {
+        let save_path = state.save_path.lock().unwrap();
+        save_path.clone()
+    };
+
+    match manager.save_to_file(&path){
+        Ok(()) =>{},
+        Err(e) => eprintln!("Failed to save: {e}"),
+    }
+}
+
+#[tauri::command]
 pub fn move_categories_to_group(state: TauriState<AppState>, ids: Vec<Uuid>, group_id: Option<Uuid>) -> Result<(), String> {
     let mut manager = state.manager.lock().unwrap();
     let result = manager.move_categories_to_group(&ids, group_id);
@@ -367,6 +397,21 @@ pub fn import_board(state: TauriState<AppState>, import_path: String)-> Result<(
     *manager = import;
 
     //save_path.lock().unwrap() is a MutexGaurd<PathBuf> so need as_path to save_to_file
+    manager.save_to_file(save_path.as_path()).map_err(|e| format!("Failed to save: {e}"))?;
+
+    Ok(())
+}
+
+//import_board but it merges into the current board instead of replacing it.
+#[tauri::command]
+pub fn import_board_merge(state: TauriState<AppState>, import_path: String)-> Result<(), String>  {
+    let import: Manager = Manager::load_from_file(Path::new(&import_path))
+        .map_err(|e| format!("Failed to import: {e}"))?;
+    let save_path = state.save_path.lock().unwrap().clone();
+
+    let mut manager = state.manager.lock().unwrap();
+    manager.merge_from(import);
+
     manager.save_to_file(save_path.as_path()).map_err(|e| format!("Failed to save: {e}"))?;
 
     Ok(())

@@ -9,9 +9,10 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
-import type { AppData, MutateFn, Task, TaskState, TaskUpdate, AppMode } from "../types";
+import type { AppData, MutateFn, Task, TaskState, TaskUpdate, AppMode, Category } from "../types";
 import { CategoryRow } from "../components/CategoryRow";
 import { TaskDetailPanel } from "../components/TaskDetailPanel";
+import { sortTasks } from "../utils/taskUtils";
 
 const NOW = () => new Date().toISOString();
 
@@ -85,6 +86,16 @@ export function MainPage({ data, mutate, mode }: Props) {
     .sort((a, b) => a.order - b.order);
 
   const sortableIds = activeCategories.map(c => `cat:${c.id}`);
+
+  // Backend reorder requires every category id. Only Active ones are draggable here, so keep
+  // archived/completed categories (in their current order) after the reordered active ones.
+  const withInactive = (reorderedActive: Category[]): string[] => [
+    ...reorderedActive.map(c => c.id),
+    ...data.categories
+      .filter(c => c.status !== "Active")
+      .sort((a, b) => a.order - b.order)
+      .map(c => c.id),
+  ];
 
   // ── Task selection ─────────────────────────────────────
   const handleToggleSelect = useCallback((id: string, multi: boolean) => {
@@ -179,7 +190,6 @@ export function MainPage({ data, mutate, mode }: Props) {
       const colChanged = toCol  !== fromCol;
       if (!catChanged && !colChanged) return;
 
-      // If the dragged task is part of a multi-selection, move all selected tasks together
       if (selectedIds.has(taskId) && selectedIds.size > 1) {
         const batchUpdate: TaskUpdate = {
           name: null, description: null, priority: null,
@@ -202,11 +212,28 @@ export function MainPage({ data, mutate, mode }: Props) {
     }
 
     if (activeData?.type === "cat" && overId.startsWith("cat:")) {
-      const oldIdx = activeCategories.findIndex(c => `cat:${c.id}` === active.id.toString());
-      const newIdx = activeCategories.findIndex(c => `cat:${c.id}` === overId);
-      if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
+      const draggedId = active.id.toString().replace("cat:", "");
+      const targetId  = overId.replace("cat:", "");
+      const oldIdx = activeCategories.findIndex(c => c.id === draggedId);
+      const newIdx = activeCategories.findIndex(c => c.id === targetId);
+      if (oldIdx === -1 || newIdx === -1 || oldIdx === newIdx) return;
+
+      if (selectedCatIds.has(draggedId) && selectedCatIds.size > 1) {
+        // Block move: lift all selected cats out, insert as a block at the target position
+        const selected = activeCategories.filter(c => selectedCatIds.has(c.id));
+        const rest     = activeCategories.filter(c => !selectedCatIds.has(c.id));
+        let insertAt   = rest.findIndex(c => c.id === targetId);
+        if (insertAt === -1) {
+          // Target is itself a selected cat — approximate position by non-selected cats before it
+          insertAt = activeCategories.slice(0, newIdx).filter(c => !selectedCatIds.has(c.id)).length;
+        } else if (newIdx > oldIdx) {
+          insertAt += 1; // dragging downward: insert after the target
+        }
+        const reordered = [...rest.slice(0, insertAt), ...selected, ...rest.slice(insertAt)];
+        mutate(() => import("../api").then(m => m.api.reorderCategories(withInactive(reordered))));
+      } else {
         const reordered = arrayMove(activeCategories, oldIdx, newIdx);
-        mutate(() => import("../api").then(m => m.api.reorderCategories(reordered.map(c => c.id))));
+        mutate(() => import("../api").then(m => m.api.reorderCategories(withInactive(reordered))));
       }
     }
   };
@@ -235,8 +262,8 @@ export function MainPage({ data, mutate, mode }: Props) {
                   key={cat.id}
                   category={cat}
                   groups={data.groups}
-                  notStarted={data.not_started.filter(t => t.category_id === cat.id)}
-                  inProgress={data.in_progress.filter(t => t.category_id === cat.id)}
+                  notStarted={sortTasks(data.not_started.filter(t => t.category_id === cat.id))}
+                  inProgress={sortTasks(data.in_progress.filter(t => t.category_id === cat.id))}
                   visibleCompleted={data.visible_completed.filter(t => t.category_id === cat.id)}
                   selectedIds={selectedIds}
                   onToggleSelect={handleToggleSelect}

@@ -185,8 +185,8 @@ export function ArchivePage({ data, mutate }: Props) {
                   setContextMenu({ x: e.clientX, y: e.clientY, ids });
                 }}
               >
-                <div>
-                  <div className="comp-bubble-name">{task.name}</div>
+                <div style={{ minWidth: 0, overflow: "hidden" }}>
+                  <div className="comp-bubble-name" title={task.name}>{task.name}</div>
                   <div className="comp-bubble-date">{formatShortDate(archivedISO(task))}</div>
                 </div>
               </div>

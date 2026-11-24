@@ -42,7 +42,7 @@
     # ── Frontend build (pnpm + Vite → dist/) ───────────────────────────────
     frontendDrv = pkgs.stdenv.mkDerivation (finalAttrs: {
       pname   = "dailyboard-frontend";
-      version = "0.1.0";
+      version = "2.0.0";
       src     = ./.;
 
       nativeBuildInputs = [
@@ -64,7 +64,7 @@
     # ── Package: Rust binary + GNOME integration ────────────────────────────
     package = pkgs.rustPlatform.buildRustPackage {
       pname   = "dailyboard";
-      version = "0.1.0";
+      version = "2.0.0";
       # builtins.path gives the store path a fixed name ("source") so that
       # sourceRoot = "source/src-tauri" resolves correctly in the build sandbox.
       # Without this, Nix hashes the path unpredictably and sourceRoot breaks.
